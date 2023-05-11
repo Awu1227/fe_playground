@@ -9,10 +9,10 @@ hero:
   actions:
     - theme: brand
       text: 快速开始
-      link: /markdown-examples
+      link: /js_road/BOM/web-api
     - theme: alt
       text: Github
-      link: /api-examples
+      link: https://github.com/Awu1227/fe_playground
 
 features:
   - title: Feature A
