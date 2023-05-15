@@ -191,3 +191,121 @@ Git 有很多钩子，其中有两个十分重要，分别是：
 
 1. **pre-commit**: git commit 执行前，它不接受任何参数，并且可以按需指定是否要拒绝本次提交
 2. **commit-msg**:用来规范化标准格式，用于在检查消息文件后拒绝提交
+
+### 使用 husky + commitlint 检查提交描述是否符合规范要求
+
+要完成这么个小目标，我们需要使用两个工具：
+
+1. [commitlint](https://github.com/conventional-changelog/commitlint)：用于检查提交信息
+2. [husky]()：是 git hooks 工具
+
+> npm 版本需要在 7.x 以上
+
+#### commitlint
+
+1. 安装依赖
+
+```bash
+npm install --save-dev @commitlint/config-conventional@12.1.4 @commitlint/cli@12.1.4
+```
+
+2. 创建 commitlint.config.js 文件
+
+```bash
+echo "module.exports = {extends: ['@commitlint/config-conventional']}" > commitlint.config.js
+```
+
+3. 打开 commitlint.config.js，增加配置项
+
+```js
+module.exports = {
+  extends: ["@commitlint/config-conventional"],
+  // 定义规则
+  rules: {
+    // type的类型定义：表示git提交的type必须在以下类型范围之内
+    "type-enum": [
+      // 当前验证的错误级别
+      2,
+      // 在什么情况下进行验证
+      "always",
+      // 泛型内容
+      [
+        "build",
+        "chore",
+        "ci",
+        "docs",
+        "feat",
+        "fix",
+        "perf",
+        "refactor",
+        "revert",
+        "style",
+        "test",
+      ],
+    ],
+    // subject大小写不做校验
+    "subject-case": [0],
+  },
+};
+```
+
+**注意，要确保 js 文件保存格式为 utf-8，否则有可能会出现错误**
+
+#### husky
+
+1. 安装依赖
+
+```bash
+npm i husky@7.0.1 --save-dev
+```
+
+2. 启动 hooks，生成.husky 文件夹
+
+```bash
+npx husky install
+```
+
+3. 在 package.json 中生成 prepare 指令（需要 npm > 7.0 版本）
+
+```bash
+npm set-script prepare 'husky install'
+```
+
+4. 运行 preapre 指令
+
+```bash
+npm run preapre
+```
+
+5. 执行成功，提示
+
+```bash
+> mi-mall@0.0.0 prepare
+> husky install
+
+husky - Git hooks installed
+```
+
+6. 添加`commitlint`的 hook 到 husky 中，并在`commit-msg`的 hooks 下执行`npx --no-install commitlint --edit "$1"`指令
+
+```bash
+npx husky add .husky/commit-msg 'npx --no-install commitlint --edit "$1"'
+```
+
+至此，不符合规范的 commit 将不再可提交：
+
+```bash
+󰐀 ~/Desktop/mi-mall/ [main*] git commit -m '增加husky和commitlint'
+⧗   input: 增加husky和commitlint
+✖   subject may not be empty [subject-empty]
+✖   type may not be empty [type-empty]
+
+✖   found 2 problems, 0 warnings
+ⓘ   Get help: https://github.com/conventional-changelog/commitlint/#what-is-commitlint
+
+husky - commit-msg hook exited with code 1 (error)
+```
+
+那么至此，我们就已经可以处理好了**强制规范化的提交要求**，到现在**不符合规范的提交信息，将不可再被提交**
+
+但是我们还缺少一个**规范化的处理**，那就是**代码格式提交规范处理！**
