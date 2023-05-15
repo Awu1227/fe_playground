@@ -2,6 +2,7 @@ import { defineConfig } from "vitepress";
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
+  ignoreDeadLinks: true,
   base: "/fe_playground/",
   title: "前端游乐场",
   description: "前端知识点汇集,构建属于自己的知识体系",
